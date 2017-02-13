@@ -1,6 +1,7 @@
 # Fusee Network Tutorial
 This tutorial will help you getting started with the network capabilities with some examples for desktop. 
 You will learn about how to establish a connection between a client and a server application, how to create these and send data over the network. The tutorial is based on the [sixth official Tutorial](https://github.com/griestopf/Fusee.Tutorial/tree/master/Tutorial06) from [Fusees tutorial page](https://github.com/griestopf/Fusee.Tutorial).
+To get the final version of this tutorial, switch to the TutorialCompleted branch in this repository. You will find all the steps described below already implemented. Use this if you want to start right away.
 
 ##Getting started
 To make this tutorial as easy as possible, the client and server application are two seperated solutions. This will help you seperate the role of each application at any time.
