@@ -75,6 +75,15 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(FuseeRoot)bin\$(Configuration)\Libraries\Fusee.Engine.Core.dll</HintPath>
     </Reference>
+    <Reference Include="NetworkClassesSerializer">
+      <HintPath>..\..\GameEngineeringServer\SerializedNetworkClasses\bin\Debug\NetworkClassesSerializer.dll</HintPath>
+    </Reference>
+    <Reference Include="protobuf-net">
+      <HintPath>$(FuseeRoot)ext\protobuf\protobuf-net.dll</HintPath>
+    </Reference>
+    <Reference Include="SerializedNetworkClasses">
+      <HintPath>..\..\GameEngineeringServer\SerializedNetworkClasses\bin\Debug\SerializedNetworkClasses.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

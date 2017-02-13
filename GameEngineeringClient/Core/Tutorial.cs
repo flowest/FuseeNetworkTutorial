@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Fusee.Base.Common;
 using Fusee.Base.Core;
@@ -7,6 +8,7 @@ using Fusee.Engine.Core;
 using Fusee.Math.Core;
 using Fusee.Serialization;
 using Fusee.Xene;
+using SerializedNetworkClasses;
 using static System.Math;
 using static Fusee.Engine.Core.Input;
 using static Fusee.Engine.Core.Time;
@@ -176,10 +178,27 @@ namespace Fusee.Tutorial.Core
 
         private Renderer _renderer;
 
+        //Fields, needed to send message on network
+        private MemoryStream memoryStream = new MemoryStream();
+        private byte[] serializedBytes;
+        private NetworkClassesSerializer networkClassesSerializer = new NetworkClassesSerializer();
+        private SerializeExample exmapleData = new SerializeExample();
+
 
         // Init is called on startup. 
         public override void Init()
         {
+            // Set up the client
+            Network netCon = Network.Instance;
+            netCon.Config.SysType = SysType.Client;
+
+            netCon.StartPeer(1337);
+            netCon.OpenConnection("127.0.0.1");
+
+            // fill exampleData with example data
+            exmapleData.exampleString = "I am a string that is going to be serialized!";
+            exmapleData.exampleFloat = 0.1234f;
+
             // Load the scene
             _scene = AssetStorage.Get<SceneContainer>("WuggyLand.fus");
             _sceneScale = float4x4.CreateScale(0.04f);
@@ -207,6 +226,16 @@ namespace Fusee.Tutorial.Core
         // RenderAFrame is called once a frame
         public override void RenderAFrame()
         {
+            //Send serialized data to server when spacebar is pressed
+            if (Keyboard.IsKeyDown(KeyCodes.Space))
+            {
+                memoryStream = new MemoryStream();
+                networkClassesSerializer.Serialize(memoryStream, exmapleData);
+                serializedBytes = memoryStream.ToArray();
+                Network.Instance.SendMessage(serializedBytes, MessageDelivery.ReliableOrdered, 1);
+                memoryStream.Dispose(); 
+            }
+
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 

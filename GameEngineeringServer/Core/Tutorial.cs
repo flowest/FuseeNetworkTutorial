@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Fusee.Base.Common;
 using Fusee.Base.Core;
@@ -7,6 +9,7 @@ using Fusee.Engine.Core;
 using Fusee.Math.Core;
 using Fusee.Serialization;
 using Fusee.Xene;
+using SerializedNetworkClasses;
 using static System.Math;
 using static Fusee.Engine.Core.Input;
 using static Fusee.Engine.Core.Time;
@@ -176,10 +179,19 @@ namespace Fusee.Tutorial.Core
 
         private Renderer _renderer;
 
+        // Fields, needed to recieve messages from network
+        private MemoryStream memoryStream;
+        private NetworkClassesSerializer networkClassesSerializer = new NetworkClassesSerializer();
 
         // Init is called on startup. 
         public override void Init()
         {
+            // Set up the server
+            Network netCon = Network.Instance;
+            netCon.Config.SysType = SysType.Server;
+            netCon.StartPeer();
+
+
             // Load the scene
             _scene = AssetStorage.Get<SceneContainer>("WuggyLand.fus");
             _sceneScale = float4x4.CreateScale(0.04f);
@@ -207,6 +219,27 @@ namespace Fusee.Tutorial.Core
         // RenderAFrame is called once a frame
         public override void RenderAFrame()
         {
+            // Set the event method when connection updates
+            Network.Instance.OnConnectionUpdate += ConnectionUpdate;
+
+            // Recieve messages from network
+            INetworkMsg msg;
+
+            while ((msg = Network.Instance.IncomingMsg) != null)
+            {
+                if (msg.Type == MessageType.Data)
+                {
+                    memoryStream = new MemoryStream(msg.Message.ReadBytes);
+                    SerializeExample exampleData = (SerializeExample)networkClassesSerializer.Deserialize(memoryStream, null, typeof(SerializeExample));
+
+                    if (exampleData != null)
+                    {
+                        Debug.WriteLine(exampleData.exampleString + " - " + exampleData.exampleFloat);
+                    }
+                }
+            }
+
+
             // Clear the backbuffer
             RC.Clear(ClearFlags.Color | ClearFlags.Depth);
 
@@ -339,6 +372,11 @@ namespace Fusee.Tutorial.Core
             // Swap buffers: Show the contents of the backbuffer (containing the currently rerndered farame) on the front buffer.
             Present();
 
+        }
+
+        private void ConnectionUpdate(ConnectionStatus estatus, INetworkConnection connection)
+        {
+            Debug.WriteLine("Connection update from: " + connection.RemoteEndPoint.Address + " which connected from port: " + connection.RemoteEndPoint.Port + ". Status: " + estatus);
         }
 
         private SceneNodeContainer GetClosest()
